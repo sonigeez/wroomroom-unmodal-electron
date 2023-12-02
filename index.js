@@ -93,7 +93,7 @@ function createWifiConfigWindow() {
     width: 500,
     height: 500,
     webPreferences: {
-      nodeIntegration: true, 
+      nodeIntegration: true,
       contextIsolation: false
     },
   });
@@ -106,6 +106,8 @@ function createWifiConfigWindow() {
 
 function runServer() {
   const localIP = getLocalIP();
+
+
   // Wait until the app is ready
   app.whenReady().then(() => {
     // Get all the displays
@@ -119,7 +121,7 @@ function runServer() {
       width: 800,
       height: 800,
       webPreferences: {
-        nodeIntegration: true, 
+        nodeIntegration: true,
         contextIsolation: false
       },
     });
@@ -173,11 +175,11 @@ function runServer() {
 function getResolvedPath(relativePath) {
   // Check if app is running in development or in packaged mode
   if (app.isPackaged) {
-      // In packaged mode, __dirname points to resources/app.asar
-      return path.join(process.resourcesPath, 'app.asar', relativePath);
+    // In packaged mode, __dirname points to resources/app.asar
+    return path.join(process.resourcesPath, 'app.asar', relativePath);
   } else {
-      // In development, use __dirname as usual
-      return path.join(__dirname, relativePath);
+    // In development, use __dirname as usual
+    return path.join(__dirname, relativePath);
   }
 }
 
@@ -185,6 +187,16 @@ function getResolvedPath(relativePath) {
 
 
 app.on("ready", () => {
+  //auto launch
+  const autoLaunch = new AutoLaunch({
+    name: "Wroomroom",
+    path: app.getPath("exe"),
+  });
+
+  autoLaunch.isEnabled().then((isEnabled) => {
+    if (!isEnabled) autoLaunch.enable();
+  }
+  );
   createWifiConfigWindow();
 });
 
