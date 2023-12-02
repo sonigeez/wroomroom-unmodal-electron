@@ -1,0 +1,266 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bootstrap Tab Navigation Example</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+  </head>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    .container {
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+ 
+
+    #app {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #qrcode-container,
+    #user-list-container {
+      text-align: center;
+      background: white;
+      padding: 2vw;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 1vw 1vw;
+      width: 100%;
+      
+    }
+
+    #qrcode-container{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    h1 {
+      color: #27ae60;
+      margin-bottom: 1vw;
+    }
+
+    #qrcode {
+      margin-bottom: 1vw;
+    }
+
+    .time {
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 2vw;
+    }
+
+    #users {
+      list-style-type: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    #users li {
+      background: #ecf0f1;
+      padding: 1vw;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+  </style>
+
+  <body>
+    <ul class="m-2 nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
+      <li class="m-1 nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="pills-home-tab"
+          data-bs-toggle="pill"
+          data-bs-target="#pills-home"
+          type="button"
+          role="tab"
+          aria-controls="pills-home"
+          aria-selected="true"
+        >
+          wifi-credentials
+        </button>
+      </li>
+      <li class="m-1 nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="pills-profile-tab"
+          data-bs-toggle="pill"
+          data-bs-target="#pills-profile"
+          type="button"
+          role="tab"
+          aria-controls="pills-profile"
+          aria-selected="false"
+        >
+          Qr Code
+        </button>
+      </li>
+    </ul>
+    <div class="m-2 tab-content" id="pills-tabContent">
+      <div
+        class="tab-pane fade show"
+        id="pills-home"
+        role="tabpanel"
+        aria-labelledby="pills-home-tab"
+        tabindex="0"
+      >
+        <div class="container">
+          <h3>Connect to WiFi</h3>
+          <input type="text" id="ssid" placeholder="WiFi SSID" />
+          <input type="password" id="password" placeholder="Password" />
+          <button id="connect">Connect</button>
+        </div>
+      </div>
+      <div
+        class="tab-pane fade show active"
+        id="pills-profile"
+        role="tabpanel"
+        aria-labelledby="pills-profile-tab"
+        tabindex="0"
+      >
+        <div id="app">
+          <div id="qrcode-container">
+            <h1>QR Code Generator</h1>
+            <div id="qrcode"></div>
+            <div class="time" id="time">00:00:00</div>
+          </div>
+
+          <div id="user-list-container">
+            <h2>Connected Users</h2>
+            <ul id="users"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      const qrcode = document.getElementById("qrcode");
+      const timeElement = document.getElementById("time");
+      let url = "";
+      const { ipcRenderer } = require("electron");
+      //ask to send localip
+        ipcRenderer.send("get-local-ip");
+
+        //get localip
+        ipcRenderer.on("local-ip", (event, localip) => {
+          console.log(localip);
+            url = `http://${localip}:8010/join/room`;
+            console.log(url);
+      qr.makeCode(url);
+        });
+
+      let allUsers = [];
+
+
+
+
+      const qr = new QRCode(qrcode);
+     
+
+      // Function to update time
+      function updateTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+        timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+        //fetch users from route localhost:8010/api/rooms/room/users
+        fetch(`http://localhost:8010/api/rooms/room/users`)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            allUsers = data;
+            let users = "";
+            //remove "viewer" string
+            allUsers = allUsers.filter((user) => user !== "viewer");
+            allUsers.forEach((user) => {
+              users += `<li class="m-1">${user}</li>`;
+            });
+            document.getElementById("users").innerHTML = users;
+          });
+      }
+
+      // Update time every second
+      setInterval(updateTime, 1000);
+
+      // Initialize the time display
+      updateTime();
+    </script>
+
+    <script>
+      const connectButton = document.getElementById("connect");
+
+      connectButton.addEventListener("click", () => {
+        const ssid = document.getElementById("ssid").value;
+        const password = document.getElementById("password").value;
+
+        // Change button text and disable it to indicate loading state
+        connectButton.textContent = "Connecting...";
+        connectButton.disabled = true;
+
+        ipcRenderer.send("wifi-modify", { ssid, password });
+      });
+
+      // Reset button when connection fails
+      ipcRenderer.on("connection-failed", () => {
+        alert(
+          "Connection to WiFi failed. Please check your credentials and try again."
+        );
+        connectButton.textContent = "Connect";
+        connectButton.disabled = false;
+      });
+      ipcRenderer.on("connection-success", () => {
+        connectButton.textContent = "Connected";
+        connectButton.disabled = false;
+        ipcRenderer.send('get-local-ip');
+
+      });
+    </script>
+  </body>
+</html>

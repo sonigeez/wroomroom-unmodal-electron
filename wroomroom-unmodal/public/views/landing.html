@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" class="no-js">
+    <head>
+        <!-- Title and Icon -->
+        <title>WroomRomm </title>
+        <link rel="shortcut icon" href="../images/logo.svg" />
+        <link rel="apple-touch-icon" href="../images/logo.svg" />
+        <!-- StyleSheet -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link rel="stylesheet" href="../css/landing.css" />
+        <!-- Js scripts -->
+        <script async src="../js/Umami.js"></script>
+        <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
+        <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
+        <script src="https://rawgit.com/leizongmin/js-xss/master/dist/xss.js"></script>
+    </head>
+    <body class="is-boxed has-animations">
+        <div class="body-wrap">
+            <main>
+                <section class="cta section">
+                    <div class="container">
+                        <div class="cta-inner section-inner br-12">
+                            <h3 class="section-title mt-0">
+                                Pick a room name.<br />
+                                How about this one?
+                            </h3>
+                            <div>
+                                <div class="mb-24">
+                                    <label for="roomName"></label>
+                                    <div class="form-group-desktop">
+                                        <input
+                                            id="roomName"
+                                            class="form-input"
+                                            type="text"
+                                            maxlength="36"
+                                            value=""
+                                            style="border-radius: 6px"
+                                        />
+                                        <button
+                                            id="joinRoomButton"
+                                            class="button button-primary pulse"
+                                            onclick="joinRoom()"
+                                        >
+                                            Join Room
+                                        </button>
+                                        <script>
+                                            document.getElementById('roomName').onkeyup = (e) => {
+                                                if (e.keyCode === 13) {
+                                                    e.preventDefault();
+                                                    joinRoom();
+                                                }
+                                            };
+                                            function genRoom() {
+                                                document.getElementById('roomName').value = getUUID4();
+                                            }
+                                            function getUUID4() {
+                                                return Math.floor(100000 + Math.random() * 900000).toString();
+
+                                            }
+                                            function joinRoom() {
+                                                const roomName = filterXSS(document.getElementById('roomName').value);
+                                                if (roomName) {
+                                                    window.location.href = '/join/' + roomName;
+                                                } else {
+                                                    alert('Room name empty!\nPlease pick a room name.');
+                                                }
+                                            }
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <script defer src="../js/landing.js"></script>
+        <script defer src="../js/newRoom.js"></script>
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
+    </body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "wroomroom-helper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron index.js",
+    "package-win": "electron-packager . Wroomroom --platform=win32 --arch=x64",
+    "package-mac": "electron-packager . Wroomroom --platform=darwin --arch=x64",
+    "package-linux": "electron-packager . Wroomroom --platform=linux --arch=x64",
+    "build": "npm run package-win && npm run package-mac && npm run package-linux",
+    "release": "gh-release --yes"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^27.0.3",
+    "electron-packager": "^17.1.2",
+    "gh-release": "^5.0.0" 
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.6",
+    "electron-unhandled": "^4.0.1",
+    "node-wifi": "^2.0.16"
+  }
+}

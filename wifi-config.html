@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WiFi Configuration</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 300px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Connect to WiFi</h3>
+        <input type="text" id="ssid" placeholder="WiFi SSID">
+        <input type="password" id="password" placeholder="Password">
+        <button id="connect">Connect</button>
+    </div>
+
+
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        const connectButton = document.getElementById('connect');
+
+        connectButton.addEventListener('click', () => {
+            const ssid = document.getElementById('ssid').value;
+            const password = document.getElementById('password').value;
+
+            // Change button text and disable it to indicate loading state
+            connectButton.textContent = 'Connecting...';
+            connectButton.disabled = true;
+
+            ipcRenderer.send('wifi-credentials', { ssid, password });
+        });
+
+        // Reset button when connection fails
+        ipcRenderer.on('connection-failed', () => {
+            alert("Connection to WiFi failed. Please check your credentials and try again.");
+            connectButton.textContent = 'Connect';
+            connectButton.disabled = false;
+        });
+        ipcRenderer.on('connection-success', () => {
+            connectButton.textContent = 'Connected';
+            connectButton.disabled = false;
+            window.close();
+        });
+
+    </script>
+</body>
+</html>
