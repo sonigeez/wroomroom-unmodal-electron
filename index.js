@@ -32,34 +32,35 @@ wifi.init({
 });
 
 async function connectToWiFi(ssid, password) {
-  return new Promise((resolve, reject) => {
-    wifi.connect({ ssid, password }, (error) => {
-      if (error) {
-        console.error("Connection Error:", error);
-        reject(error);
-      } else {
-        console.log("Connected to WiFi:", ssid);
-        resolve();
-      }
-    });
-  });
+  // Connect to a network
+  await wifi.connect({ ssid, password });
+  //check if connected
+  const connection = await wifi.getCurrentConnections();
+  //check ssid
+  if (connection[0].ssid === ssid) {
+    console.log("Connected to network.");
+  } else {
+    console.log("Not connected to network.");
+  }
+
 }
 
 
 ipcMain.on("wifi-credentials", async (event, { ssid, password }) => {
   console.log(ssid, password);
-  try {
-    // await connectToWiFi(ssid, password);
+  await wifi.connect({ ssid, password });
+  //check if connected
+  const connection = await wifi.getCurrentConnections();
+  //check ssid
+  if (connection[0].ssid === ssid) {
+    console.log("Connected to network.");
+    // wait for 5 second
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    runServer();
     console.log("connection-success");
-    //wait for 5 second
-    // await new Promise((resolve) => setTimeout(resolve, 5000));
-    runServer(); // Your function to create main app windows
     event.reply("connection-success");
-
-    // ... Start your server and other components ...
-  } catch (error) {
-    // Handle connection error (e.g., show error message, prompt retry)
-    console.error("WiFi connection failed:", error);
+  } else {
+    console.log("Not connected to network.");
     event.reply("connection-failed");
   }
 });
@@ -67,17 +68,19 @@ ipcMain.on("wifi-credentials", async (event, { ssid, password }) => {
 
 
 ipcMain.on("wifi-modify", async (event, { ssid, password }) => {
-  console.log(ssid, password);
-  try {
-    await connectToWiFi(ssid, password);
+  await wifi.connect({ ssid, password });
+  //check if connected
+  const connection = await wifi.getCurrentConnections();
+  //check ssid
+  if (connection[0].ssid === ssid) {
+    console.log("Connected to network.");
+    // wait for 5 second
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    runServer();
     console.log("connection-success");
     event.reply("connection-success");
-
-
-    // ... Start your server and other components ...
-  } catch (error) {
-    // Handle connection error (e.g., show error message, prompt retry)
-    console.error("WiFi connection failed:", error);
+  } else {
+    console.log("Not connected to network.");
     event.reply("connection-failed");
   }
 });
@@ -90,6 +93,7 @@ ipcMain.on("get-local-ip", async (event) => {
 
 function createWifiConfigWindow() {
   const wifiConfigWindow = new BrowserWindow({
+    fullscreen: true,
     width: 500,
     height: 500,
     webPreferences: {
@@ -107,67 +111,52 @@ function createWifiConfigWindow() {
 function runServer() {
   const localIP = getLocalIP();
 
-
   // Wait until the app is ready
   app.whenReady().then(() => {
     // Get all the displays
     const displays = screen.getAllDisplays();
-    const externalDisplay = displays.find(
-      (display) => display.bounds.x !== 0 || display.bounds.y !== 0
-    );
 
-    // First window
-    const win1 = new BrowserWindow({
-      width: 800,
-      height: 800,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false
-      },
-    });
-
-    if (externalDisplay) {
-      // Load URL in the first window
-      win1.loadURL(`https://${localIP}:8010/view/room`);
-
-      //load full screen
-      win1.setFullScreen(true);
-
-      // Second window, positioned based on external display
-      const win2 = new BrowserWindow({
-        x: externalDisplay.bounds.x + 50,
-        y: externalDisplay.bounds.y + 50,
-        width: 800,
-        height: 600,
-        webPreferences: {
-          nodeIntegration: true,
-        },
-      });
-
-      // Load URL in the second window
-      // win2.loadURL(`https://${localIP}:8010/qrcode/room`);
-      win2.loadFile('qrcode.html')
-      //load full screen
-      win2.setFullScreen(true);
+    // Determine the primary and secondary display based on size
+    let primaryDisplay, secondaryDisplay;
+    if (displays.length > 1) {
+      // Sort displays by size (smallest to largest)
+      displays.sort((a, b) => (a.size.width * a.size.height) - (b.size.width * b.size.height));
+      // Smallest display is secondary
+      secondaryDisplay = displays[0];
+      // Largest display is primary
+      primaryDisplay = displays[displays.length - 1];
     } else {
-      // No external display found, load second URL in the first window
-      // win1.loadURL(`https://${localIP}:8010/qrcode/room`);
-      win1.loadFile('qrcode.html')
-      win1.maximize();
-      //load full screen
-      win1.setFullScreen(true);
+      // Only one display, use it as primary
+      primaryDisplay = displays[0];
+    }
 
-      const win2 = new BrowserWindow({
+    // Create windows for each display
+    const createWindow = (display, url) => {
+      const window = new BrowserWindow({
+        x: display.bounds.x,
+        y: display.bounds.y,
         width: 800,
         height: 600,
         webPreferences: {
           nodeIntegration: true,
+          contextIsolation: false
         },
       });
-      win2.loadURL(`https://${localIP}:8010/view/room`);
-      win2.maximize();
-      //load full screen
-      win2.setFullScreen(true);
+
+      window.loadURL(url);
+      window.setFullScreen(true);
+      return window;
+    };
+
+    // Load different content based on display size
+    if (secondaryDisplay) {
+      // Load QR code in the smaller display
+      createWindow(secondaryDisplay, `file://${path.join(__dirname, 'qrcode.html')}`);
+      // Load room view in the larger display
+      createWindow(primaryDisplay, `https://${localIP}:8010/view/room`);
+    } else {
+      // If only one display, load QR code and maximize
+      createWindow(primaryDisplay, `file://${path.join(__dirname, 'qrcode.html')}`);
     }
   });
 }
