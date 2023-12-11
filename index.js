@@ -4,10 +4,8 @@ const wifi = require("node-wifi");
 const os = require("os");
 const path = require("path");
 const fs = require('fs');
-const unhandled = require('electron-unhandled');
 const startServer = require('./wroomroom-unmodal/app/src/Server.js');
 
-unhandled();
 
 
 
@@ -30,20 +28,6 @@ function getLocalIP() {
 wifi.init({
   iface: null,
 });
-
-async function connectToWiFi(ssid, password) {
-  // Connect to a network
-  await wifi.connect({ ssid, password });
-  //check if connected
-  const connection = await wifi.getCurrentConnections();
-  //check ssid
-  if (connection[0].ssid === ssid) {
-    console.log("Connected to network.");
-  } else {
-    console.log("Not connected to network.");
-  }
-
-}
 
 
 ipcMain.on("wifi-credentials", async (event, { ssid, password }) => {

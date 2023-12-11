@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>WiFi Configuration</title>
 
@@ -44,6 +45,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h3>Connect to WiFi</h3>
@@ -61,6 +63,12 @@
         connectButton.addEventListener('click', () => {
             const ssid = document.getElementById('ssid').value;
             const password = document.getElementById('password').value;
+
+            // Check if ssid or password fields are empty
+            if (!ssid || !password) {
+                alert('Please enter both WiFi SSID and password.');
+                return; // Stop the function if fields are empty
+            }
 
             // Change button text and disable it to indicate loading state
             connectButton.textContent = 'Connecting...';
@@ -83,4 +91,5 @@
 
     </script>
 </body>
+
 </html>
