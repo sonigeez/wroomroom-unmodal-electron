@@ -79,9 +79,10 @@
 
         // Reset button when connection fails
         ipcRenderer.on('connection-failed', () => {
-            alert("Connection to WiFi failed. Please check your credentials and try again.");
             connectButton.textContent = 'Connect';
             connectButton.disabled = false;
+            document.getElementById("ssid").focus();
+
         });
         ipcRenderer.on('connection-success', () => {
             connectButton.textContent = 'Connected';

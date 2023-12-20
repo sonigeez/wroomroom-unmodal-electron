@@ -5,6 +5,7 @@ const os = require("os");
 const path = require("path");
 const fs = require('fs');
 const startServer = require('./wroomroom-unmodal/app/src/Server.js');
+const { dialog } = require('electron')
 
 
 
@@ -32,17 +33,41 @@ wifi.init({
 
 ipcMain.on("wifi-credentials", async (event, { ssid, password }) => {
   console.log(ssid, password);
-  await wifi.connect({ ssid, password });
+
+  try {
+    await wifi.connect({ ssid, password });
+
+  } catch (error) {
+    console.log("Not connected to network. try catch");
+    event.reply("connection-failed");
+    console.log(error)
+    dialog.showErrorBox('connection failed', 'wrong credentials')
+
+    return;
+  }
   //check if connected
-  // const connection = await wifi.getCurrentConnections();
-  //check ssid
+  //check 
+  console.log("waiting for few second ")
 
   await new Promise((resolve) => setTimeout(resolve, 5000));
-  runServer();
-  console.log("connection-success");
-  event.reply("connection-success");
+  const connection = await wifi.getCurrentConnections();
+  console.log(connection)
+  if (connection[0].ssid === ssid) {
 
-  // if (connection[0].ssid !== null && connection[0].ssid === ssid) {
+    runServer();
+    console.log("connection-success");
+    event.reply("connection-success");
+  } else {
+    console.log(connection[0].ssid)
+    console.log(ssid)
+    dialog.showErrorBox('connection failed', 'wrong credentials')
+
+    console.log("Not connected to network if else.");
+    event.reply("connection-failed");
+  }
+
+
+
   //   console.log("Connected to network.");
   //   // wait for 5 second
 
@@ -55,22 +80,36 @@ ipcMain.on("wifi-credentials", async (event, { ssid, password }) => {
 
 
 ipcMain.on("wifi-modify", async (event, { ssid, password }) => {
-  await wifi.connect({ ssid, password });
-  //check if connected
-  // const connection = await wifi.getCurrentConnections();
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  runServer();
-  console.log("connection-success");
-  event.reply("connection-success");
-  //check ssid
-  // if (connection[0].ssid === ssid) {
-  //   console.log("Connected to network.");
-  //   // wait for 5 second
+  console.log(ssid, password);
+  try {
+    await wifi.connect({ ssid, password });
 
-  // } else {
-  // console.log("Not connected to network.");
-  // event.reply("connection-failed");
-  // }
+  }
+  catch (error) {
+    console.log("Not connected to network. try catch");
+    event.reply("connection-failed");
+    console.log(error)
+    dialog.showErrorBox('connection failed', 'wrong credentials')
+
+    return;
+  }
+  //check if connected
+  //check
+  console.log("waiting for few second ")
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  const connection = await wifi.getCurrentConnections();
+  console.log(connection)
+  if (connection[0].bssid === ssid) {
+    console.log("connection-success");
+    event.reply("connection-success");
+  } else {
+    dialog.showErrorBox('connection failed', 'wrong credentials')
+
+    console.log(connection[0].ssid)
+    console.log(ssid)
+    console.log("Not connected to network if else.");
+    event.reply("connection-failed");
+  }
 });
 
 //send local ip
@@ -120,7 +159,8 @@ function runServer() {
 
     if (externalDisplay) {
       // Load URL in the first window
-      win1.loadURL(`https://${localIP}:8010/view/room`);
+      // win1.loadURL(`https://${localIP}:8010/view/room`);
+      win1.loadFile('qrcode.html')
 
       //load full screen
       win1.setFullScreen(true);
@@ -133,12 +173,13 @@ function runServer() {
         height: 600,
         webPreferences: {
           nodeIntegration: true,
+          contextIsolation: false
         },
       });
 
       // Load URL in the second window
       // win2.loadURL(`https://${localIP}:8010/qrcode/room`);
-      win2.loadFile('qrcode.html')
+      win2.loadURL(`https://${localIP}:8010/view/room`)
       //load full screen
       win2.setFullScreen(true);
     } else {
@@ -154,6 +195,7 @@ function runServer() {
         height: 600,
         webPreferences: {
           nodeIntegration: true,
+          contextIsolation: false
         },
       });
       win2.loadURL(`https://${localIP}:8010/view/room`);
