@@ -290,7 +290,8 @@ function enumerateVideoDevices(stream) {
 }
 
 async function initEnumerateAudioDevices() {
-    if (isEnumerateAudioDevices) return;
+    // if (isEnumerateAudioDevices) return;
+    return;
     // allow the audio
     await navigator.mediaDevices
         .getUserMedia({ audio: true })
@@ -1675,7 +1676,7 @@ function setVideoButtonsDisabled(disabled) {
     stopVideoButton.disabled = disabled;
 }
 
-async function sound(name) {}
+async function sound(name) { }
 
 function isImageURL(url) {
     return url.match(/\.(jpeg|jpg|gif|png|tiff|bmp)$/) != null;
@@ -1727,7 +1728,7 @@ function getCookie(cName) {
 function isHtml(str) {
     var a = document.createElement('div');
     a.innerHTML = str;
-    for (var c = a.childNodes, i = c.length; i--; ) {
+    for (var c = a.childNodes, i = c.length; i--;) {
         if (c[i].nodeType == 1) return true;
     }
     return false;
