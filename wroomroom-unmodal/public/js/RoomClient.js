@@ -1,5 +1,12 @@
 'use strict';
 
+var highestVolume = 0;
+
+
+//a function repetatively every 2 second
+setInterval(function () {
+    highestVolume = 0;
+}, 2000);
 
 const cfg = {
     useAvatarSvg: true,
@@ -950,7 +957,7 @@ class RoomClient {
                 default:
                     return;
             }
-            
+
 
             // if present produce the tab audio on screen share
             if (screen && stream.getAudioTracks()[0]) {
@@ -1530,7 +1537,7 @@ class RoomClient {
                 return;
         }
 
-        
+
     }
 
     async produceScreenAudio(stream) {
@@ -1613,6 +1620,9 @@ class RoomClient {
         this.getConsumeStream(producer_id, peer_info.peer_id, type).then(
             function ({ consumer, stream, kind }) {
                 console.log('CONSUMER MEDIA TYPE ----> ' + type);
+                //if consumer media type is audio then return
+                // console.log(type)
+                // if (type === 'audioType') return;
                 console.log('CONSUMER', consumer);
 
                 this.consumers.set(consumer.id, consumer);
@@ -1667,6 +1677,23 @@ class RoomClient {
             stream,
             kind,
         };
+    }
+
+    //mute a consumer
+    muteConsumer(consumer_id, type) {
+        if (!this.consumers.has(consumer_id)) {
+            return console.log('There is no consumer for this id ' + consumer_id);
+        }
+
+        let consumer = this.consumers.get(consumer_id);
+
+        if (type === mediaType.audio) {
+            consumer.pause();
+            this.event(_EVENTS.pauseAudioConsumer);
+        } else {
+            consumer.pause();
+            this.event(_EVENTS.pauseVideoConsumer);
+        }
     }
 
     handleConsumer(id, type, stream, peer_name, peer_info) {
@@ -1786,7 +1813,7 @@ class RoomClient {
                 this.checkPeerInfoStatus(peer_info);
                 if (!remoteIsScreen && remotePrivacyOn) this.setVideoPrivacyStatus(remotePeerId, remotePrivacyOn);
                 if (remoteIsScreen) pn.click();
-                
+
                 handleAspectRatio();
                 console.log('[addConsumer] Video-element-count', this.videoMediaContainer.childElementCount);
                 if (!this.isMobileDevice) {
@@ -1868,7 +1895,7 @@ class RoomClient {
         }
 
         this.consumers.delete(consumer_id);
-        
+
     }
 
     // ####################################################
@@ -1984,7 +2011,7 @@ class RoomClient {
 
     shareScreen() {
         if (!this.isMobileDevice && (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia)) {
-            
+
             // startScreenButton.click(); // Chrome - Opera - Edge - Brave
             // handle error: getDisplayMedia requires transient activation from a user gesture on Safari - FireFox
             Swal.fire({
@@ -2255,7 +2282,7 @@ class RoomClient {
     // UTILITY
     // ####################################################
 
-    async sound(name) {}
+    async sound(name) { }
 
     userLog(icon, message, position, timer = 5000) {
         const Toast = Swal.mixin({
@@ -2416,9 +2443,9 @@ class RoomClient {
             el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullScreen;
         if (document.fullscreenEnabled) {
             document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.msFullscreenElement
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
                 ? document.exitFullscreen()
                 : el.requestFullscreen();
         }
@@ -3019,7 +3046,7 @@ class RoomClient {
     isHtml(str) {
         var a = document.createElement('div');
         a.innerHTML = str;
-        for (var c = a.childNodes, i = c.length; i--; ) {
+        for (var c = a.childNodes, i = c.length; i--;) {
             if (c[i].nodeType == 1) return true;
         }
         return false;
@@ -3028,11 +3055,11 @@ class RoomClient {
     isValidHttpURL(input) {
         const pattern = new RegExp(
             '^(https?:\\/\\/)?' + // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                '(\\#[-a-z\\d_]*)?$',
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$',
             'i',
         ); // fragment locator
         return pattern.test(input);
@@ -3658,7 +3685,7 @@ class RoomClient {
     }
 
     shareVideo(peer_id = 'all') {
-        
+
 
         Swal.fire({
             background: swalBackground,
@@ -3805,7 +3832,7 @@ class RoomClient {
             this.setTippy(e.id, 'Close video player', 'top-end');
         }
         console.log('[openVideo] Video-element-count', this.videoMediaContainer.childElementCount);
-        
+
     }
 
     closeVideo(emit = false, peer_id = 'all') {
@@ -3828,7 +3855,7 @@ class RoomClient {
             }
             handleAspectRatio();
             console.log('[closeVideo] Video-element-count', this.videoMediaContainer.childElementCount);
-            
+
         }
     }
 
@@ -3936,11 +3963,11 @@ class RoomClient {
         const status = active ? 'ON' : 'OFF';
         switch (action) {
             case 'pitchBar':
-                
+
                 this.userLog('info', `${icons.pitchBar} Audio pitch bar ${status}`, 'top-end');
                 break;
             case 'sounds':
-                
+
                 this.userLog('info', `${icons.sounds} Sounds notification ${status}`, 'top-end');
                 break;
             default:
@@ -4004,7 +4031,7 @@ class RoomClient {
                 this.msgPopup('info', 'Your join meeting was be accepted by moderator');
                 break;
             case 'reject':
-                
+
                 Swal.fire({
                     icon: 'warning',
                     allowOutsideClick: false,
@@ -4127,7 +4154,7 @@ class RoomClient {
                 lobby.style.height = '100%';
             }
             isLobbyOpen = true;
-            
+
         } else {
             lobby.style.display = 'none';
             isLobbyOpen = false;
@@ -4173,7 +4200,7 @@ class RoomClient {
     }
 
     roomIsLocked() {
-        
+
         this.event(_EVENTS.roomLock);
         console.log('Room is Locked, try with another one');
         Swal.fire({
@@ -4193,7 +4220,7 @@ class RoomClient {
     }
 
     waitJoinConfirm() {
-        
+
         Swal.fire({
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -4221,6 +4248,24 @@ class RoomClient {
     // ####################################################
 
     handleAudioVolume(data) {
+        console.log(data)
+        //mute 
+
+        if(data.audioVolume>highestVolume){
+            highestVolume=data.audioVolume;
+            console.log(highestVolume)
+            //mute everyone else who is not the highest volume
+            this.consumers.forEach((consumer) => {
+                if (consumer.appData.peer_id != data.peer_id) {
+                    //pause audio consuming only
+                    if (consumer.kind === 'audio') {
+                        consumer.pause();
+                    }
+                }
+            }
+            )
+            
+        }
         if (!isPitchBarEnabled) return;
         let peerId = data.peer_id;
         let peerName = data.peer_name;
@@ -4642,30 +4687,30 @@ class RoomClient {
             this.setTippy(
                 id,
                 '<pre>' +
-                    JSON.stringify(
-                        peer_info,
-                        [
-                            'join_data_time',
-                            'peer_id',
-                            'peer_name',
-                            'peer_audio',
-                            'peer_video',
-                            'peer_video_privacy',
-                            'peer_screen',
-                            'peer_hand',
-                            'is_desktop_device',
-                            'is_mobile_device',
-                            'is_tablet_device',
-                            'is_ipad_pro_device',
-                            'os_name',
-                            'os_version',
-                            'browser_name',
-                            'browser_version',
-                            //'user_agent',
-                        ],
-                        2,
-                    ) +
-                    '<pre/>',
+                JSON.stringify(
+                    peer_info,
+                    [
+                        'join_data_time',
+                        'peer_id',
+                        'peer_name',
+                        'peer_audio',
+                        'peer_video',
+                        'peer_video_privacy',
+                        'peer_screen',
+                        'peer_hand',
+                        'is_desktop_device',
+                        'is_mobile_device',
+                        'is_tablet_device',
+                        'is_ipad_pro_device',
+                        'os_name',
+                        'os_version',
+                        'browser_name',
+                        'browser_version',
+                        //'user_agent',
+                    ],
+                    2,
+                ) +
+                '<pre/>',
                 'top-start',
                 true,
             );
